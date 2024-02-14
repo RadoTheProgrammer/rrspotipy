@@ -1,0 +1,4 @@
+.DS_Store
+paircompare-data.txt
+__pycache__
+/dist
