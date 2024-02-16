@@ -17,7 +17,7 @@ import random
 import sys
 import json
 import time
-import random
+
 #from rrpairw import pairwise_comparison
 #os.chdir(os.path.dirname(__file__))
 
@@ -39,9 +39,9 @@ running = True
 
 class Pygame:
     def __enter__(self):
-        pygame.init()
+        pygame.init() #pylint: disable=no-member
     def __exit__(self,exct,exc,tb):
-        pygame.quit()
+        pygame.quit() #pylint: disable=no-member
 class Playlist(list):
     def verif(self):
         nfiles=[]
@@ -93,10 +93,10 @@ class Playlist(list):
             for event in pygame.event.get():
 
                 #print(event)
-                if event.type==pygame.QUIT:
+                if event.type==pygame.QUIT: #pylint: disable=no-member
                     self.running=False
 
-                if event.type==pygame.KEYDOWN:
+                if event.type==pygame.KEYDOWN: #pylint: disable=no-member
                     if event.key==1073741906: #key arrow up
                         self.previous()
                     elif event.key==1073741905: #key arrow down
@@ -179,72 +179,99 @@ class Playlist(list):
         pygame.event.clear()
         while True:
             for event in pygame.event.get():
-                if event.type==pygame.QUIT:
+                if event.type==pygame.QUIT: #pylint: disable=no-member
                     raise KeyboardInterrupt
                 
-                if event.type==pygame.KEYDOWN:
+                if event.type==pygame.KEYDOWN: #pylint: disable=no-member
                     if event.unicode=="p":
                         plpair.start()
                     return event.unicode
 
-    def pairwise_comparison(self,file="paircompare-data.txt"):
-        #print(self._pairwise_cmd1(("1","2")))
-        #print(self._pairwise_cmds["p1"](("1","2")))
-        #print("WW")
-        return Playlist(pairwise_comparison(self,file,compare_func=self._compare))
-    def k7(self,minl,maxl,ntries=100):
-        playlists=[]
-        lself=len(self)
-        for _ in range(ntries):
-            pl=self.copy()
-            rem_pl=[]
-            lpl=len(pl)
-            l=0
-            #print(_)
-            while True:
-                idx=random.randrange(lpl)
-                sound=pl[idx]
-                duration=self.get_duration_of(sound)
-                l+=duration
-                del pl[idx]
-                rem_pl.append(sound)
-                if l>minl:
-                    if l>maxl:
-                        break
-                    playlists.append((TimeFormat(l),Playlist(pl),Playlist(rem_pl)))
-                lpl-=1
-        return playlists
-    def k7(self,maxl,ntries=1000):
-        bestl=0
-        lself=len(self)
-        for ntry in range(ntries):
-            pl=self.copy()
-            rem_pl=[]
-            l=0
-            lpl=lself
-            while True:
-                idx=random.randrange(lpl)
-                sound=pl[idx]
-                duration=self.get_duration_of(sound)
-                l+=duration
-                if l>maxl:
-                    l-=duration
-                    break
-                rem_pl.append(sound)
-                del pl[idx]
-                lpl-=1
-            if l>bestl:
-                l=TimeFormat(l)
-                print(ntry,l)
-                bestl=l
-                bestp=pl
-                bestr=rem_pl
-        return (bestl,bestp,bestr)
+    #def pairwise_comparison(self,file="paircompare-data.txt"):
+    #    return Playlist(rrpairw.pairwise_comparison(self,file,compare_func=self._compare))
+    
+    # def k7(self,minl,maxl,ntries=100):
+    #     playlists=[]
+    #     lself=len(self)
+    #     for _ in range(ntries):
+    #         pl=self.copy()
+    #         rem_pl=[]
+    #         lpl=len(pl)
+    #         l=0
+    #         #print(_)
+    #         while True:
+    #             idx=random.randrange(lpl)
+    #             sound=pl[idx]
+    #             duration=self.get_duration_of(sound)
+    #             l+=duration
+    #             del pl[idx]
+    #             rem_pl.append(sound)
+    #             if l>minl:
+    #                 if l>maxl:
+    #                     break
+    #                 playlists.append((TimeFormat(l),Playlist(pl),Playlist(rem_pl)))
+    #             lpl-=1
+    #     return playlists
+    # def k7(self,maxl,ntries=1000):
+    #     bestl=0
+    #     lself=len(self)
+    #     for ntry in range(ntries):
+    #         pl=self.copy()
+    #         rem_pl=[]
+    #         l=0
+    #         lpl=lself
+    #         while True:
+    #             idx=random.randrange(lpl)
+    #             sound=pl[idx]
+    #             duration=self.get_duration_of(sound)
+    #             l+=duration
+    #             if l>maxl:
+    #                 l-=duration
+    #                 break
+    #             rem_pl.append(sound)
+    #             del pl[idx]
+    #             lpl-=1
+    #         if l>bestl:
+    #             l=TimeFormat(l)
+    #             print(ntry,l)
+    #             bestl=l
+    #             bestp=pl
+    #             bestr=rem_pl
+    #     return (bestl,bestp,bestr)
 
+    def to_dir(self, dir, symlink_mode=False):
+        """
+        Copies or creates symbolic links of files in the current object to the specified directory.
+
+        Args:
+            dir (str): The destination directory where the files will be copied or linked to.
+            symlink_mode (bool, optional): If True, creates symbolic links instead of copying the files. 
+                Defaults to False.
+
+        Returns:
+            None
+        """
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+        n = 1
+        widthidx = len(str(len(self)))
+        for idx, file in enumerate(self, start=1):
+            # Code to be executed for each file
+            # print(f"Index: {idx}, File: {file}")
+            src = os.path.abspath(file)
+            idx = str(idx).zfill(widthidx)
+            #print(padded_number)  # Output: "02"
+            dst = os.path.join(dir, f"{idx}-{os.path.basename(file)}")
+            if symlink_mode:
+                os.symlink(src, dst)
+            else:
+                with open(src, "rb") as fsrc, open(dst, "wb") as fdst:
+                    fdst.write(fsrc.read())
+                
             
     def __repr__(self):
         return json.dumps(self,indent=2)
-
+    _pos=None
 
 class TimeFormat(float):
     def __repr__(self):
@@ -256,11 +283,3 @@ class TimeFormat(float):
         return str(number).zfill(2)
 #print(Time_Format(-3))
 
-if __name__=="__main__":
-    import tests.rrspotipy_caller as rrspotipy_caller
-
-simplevar=1
-
-#print(233//2)
-#rint(Time_Format(321))
-simpleVar=2
