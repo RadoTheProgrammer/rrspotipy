@@ -10,13 +10,15 @@ p           show pos
 q           stop
 """
 
-import pygame
+
 import os
-import audioread
 import random
 import sys
 import json
 import time
+
+import audioread
+import pygame
 
 #from rrpairw import pairwise_comparison
 #os.chdir(os.path.dirname(__file__))
