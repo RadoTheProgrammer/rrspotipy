@@ -1,7 +1,6 @@
-
+DIR="playlist_songs"
 import rrspotipy
 
-DIR="my_favourite_songs"
 
 playlist=rrspotipy.Playlist.from_dir(DIR)
 playlist.verif()
