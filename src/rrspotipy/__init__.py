@@ -16,6 +16,7 @@ import random
 import sys
 import json
 import time
+import re
 
 import audioread
 import pygame
@@ -241,7 +242,7 @@ class Playlist(list):
     #             bestr=rem_pl
     #     return (bestl,bestp,bestr)
 
-    def to_dir(self, dir, symlink_mode=False):
+    def to_dir(self, dir, mode="symlink"):
         """
         Copies or creates symbolic links of files in the current object to the specified directory.
 
@@ -263,12 +264,17 @@ class Playlist(list):
             src = os.path.abspath(file)
             idx = str(idx).zfill(widthidx)
             #print(padded_number)  # Output: "02"
-            dst = os.path.join(dir, f"{idx}-{os.path.basename(file)}")
-            if symlink_mode:
+            dst = os.path.join(dir, f"{idx}-{re.sub(r'^\d+-', '', os.path.basename(file))}")
+            while os.path.exists(dst):
+                file,ext=os.path.splitext(dst)
+                dst=f"{file}-{ext}"
+            if mode=="symlink":
                 os.symlink(src, dst)
-            else:
+            elif mode=="copy":
                 with open(src, "rb") as fsrc, open(dst, "wb") as fdst:
                     fdst.write(fsrc.read())
+            elif mode=="move":
+                os.rename(src, dst)
                 
             
     def __repr__(self):
